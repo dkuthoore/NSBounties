@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty } from "@shared/schema";
@@ -9,7 +9,7 @@ import { Link } from "wouter";
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-bold">{bounty.title}</CardTitle>
@@ -19,7 +19,7 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground mb-4">{bounty.description}</p>
+        <p className="text-muted-foreground mb-4 line-clamp-2">{bounty.description}</p>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <SiDiscord className="h-4 w-4" />
@@ -42,7 +42,10 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         <span className="text-lg font-bold">${Number(bounty.usdcAmount).toFixed(2)} USDC</span>
         {bounty.status === "open" && (
           <Link href={`/bounty/${bounty.id}`}>
-            <Button>View Details</Button>
+            <Button className="flex items-center gap-2">
+              View Details
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </Link>
         )}
       </CardFooter>

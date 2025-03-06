@@ -10,6 +10,7 @@ import CreateBounty from "@/pages/create-bounty";
 import ManageBounty from "@/pages/manage-bounty";
 import { useEffect } from "react";
 import { WalletConnect } from "@/components/wallet-connect";
+import BountyDetails from "@/pages/bounty-details";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/create" component={CreateBounty} />
       <Route path="/manage/:url" component={ManageBounty} />
+      <Route path="/bounty/:id" component={BountyDetails} />
       <Route component={NotFound} />
     </Switch>
   );
