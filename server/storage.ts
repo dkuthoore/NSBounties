@@ -19,6 +19,8 @@ export class DatabaseStorage implements IStorage {
       .values({
         ...insertBounty,
         managementUrl,
+        updatedAt: new Date(),
+        createdAt: new Date(),
       })
       .returning();
     return bounty;

@@ -34,7 +34,7 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         {bounty.deadline && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
             <Clock className="h-4 w-4" />
-            <span>Due {formatDistanceToNow(new Date(bounty.deadline))}</span>
+            <span>Due {formatDistanceToNow(new Date(bounty.deadline))} from now</span>
           </div>
         )}
       </CardContent>
