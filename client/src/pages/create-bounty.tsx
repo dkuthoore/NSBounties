@@ -29,7 +29,12 @@ export default function CreateBounty() {
 
   const createBounty = useMutation({
     mutationFn: async (data: InsertBounty) => {
-      const res = await apiRequest("POST", "/api/bounties", data);
+      // Format the data before sending to server
+      const formattedData = {
+        ...data,
+        deadline: data.deadline || undefined
+      };
+      const res = await apiRequest("POST", "/api/bounties", formattedData);
       return res.json();
     },
     onSuccess: (data) => {

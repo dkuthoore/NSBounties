@@ -1,6 +1,6 @@
 import { bounties, type Bounty, type InsertBounty } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -14,13 +14,14 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async createBounty(insertBounty: InsertBounty): Promise<Bounty> {
     const managementUrl = nanoid(32);
+    const now = new Date();
     const [bounty] = await db
       .insert(bounties)
       .values({
         ...insertBounty,
         managementUrl,
-        updatedAt: new Date(),
-        createdAt: new Date(),
+        updatedAt: now,
+        createdAt: now,
       })
       .returning();
     return bounty;
@@ -37,7 +38,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listBounties(): Promise<Bounty[]> {
-    return db.select().from(bounties).orderBy(bounties.createdAt);
+    return db.select().from(bounties).orderBy(desc(bounties.createdAt));
   }
 
   async updateBountyStatus(id: string, status: "open" | "closed", recipientAddress?: string): Promise<Bounty> {
