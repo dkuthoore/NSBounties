@@ -9,6 +9,7 @@ export interface IStorage {
   getBountyByManagementUrl(url: string): Promise<Bounty | undefined>;
   listBounties(): Promise<Bounty[]>;
   updateBountyStatus(id: string, status: "open" | "closed", recipientAddress?: string): Promise<Bounty>;
+  deleteBounty(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -52,6 +53,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(bounties.id, id))
       .returning();
     return bounty;
+  }
+
+  async deleteBounty(id: string): Promise<void> {
+    await db.delete(bounties).where(eq(bounties.id, id));
   }
 }
 

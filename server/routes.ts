@@ -66,6 +66,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete bounty
+  app.delete("/api/bounties/:id", async (req, res) => {
+    try {
+      await storage.deleteBounty(req.params.id);
+      res.json({ message: "Bounty deleted successfully" });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to delete bounty" });
+      throw err;
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

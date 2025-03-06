@@ -1,13 +1,17 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { Calendar, Clock, ArrowRight, ExternalLink } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty } from "@shared/schema";
 import { Link } from "wouter";
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
+  const openDiscordDM = () => {
+    window.open(`discord:///users/${bounty.discordHandle}`, '_blank');
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -22,8 +26,15 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         <p className="text-muted-foreground mb-4 line-clamp-2">{bounty.description}</p>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-          <SiDiscord className="h-4 w-4" />
-          <span>{bounty.discordHandle}</span>
+          <Button 
+            variant="ghost" 
+            onClick={openDiscordDM}
+            className="h-auto p-0 text-muted-foreground hover:text-primary flex items-center gap-2"
+          >
+            <SiDiscord className="h-4 w-4" />
+            {bounty.discordHandle}
+            <ExternalLink className="h-3 w-3" />
+          </Button>
         </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">

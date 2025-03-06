@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,14 +6,59 @@ import { Calendar, Clock, ExternalLink } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty } from "@shared/schema";
+import { useAccount } from 'wagmi';
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function BountyDetails({ params }: { params: { id: string } }) {
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  const { address } = useAccount();
+
   const { data: bounty, isLoading } = useQuery<Bounty>({
     queryKey: [`/api/bounties/${params.id}`],
   });
 
+  const deleteBounty = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", `/api/bounties/${params.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bounties"] });
+      toast({ title: "Bounty deleted successfully" });
+      setLocation("/");
+    },
+    onError: (err) => {
+      toast({
+        title: "Error deleting bounty",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const closeBounty = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PATCH", `/api/bounties/${params.id}/status`, {
+        status: "closed",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/bounties/${params.id}`] });
+      toast({ title: "Bounty marked as closed" });
+    },
+    onError: (err) => {
+      toast({
+        title: "Error closing bounty",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    },
+  });
+
   const openDiscordDM = () => {
-    // Discord's direct message URL format
     window.open(`discord:///users/${bounty?.discordHandle}`, '_blank');
   };
 
@@ -26,6 +71,8 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
       </div>
     );
   }
+
+  const isCreator = address && bounty.creatorAddress === address;
 
   return (
     <div className="container mx-auto py-8">
@@ -75,6 +122,29 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
               </div>
             )}
           </div>
+
+          {isCreator && bounty.status === "open" && (
+            <div className="flex gap-4 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => closeBounty.mutate()}
+                disabled={closeBounty.isPending}
+              >
+                Mark as Closed
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete this bounty?")) {
+                    deleteBounty.mutate();
+                  }
+                }}
+                disabled={deleteBounty.isPending}
+              >
+                Delete Bounty
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
