@@ -27,7 +27,37 @@ export async function transferUSDC(signer: ethers.Signer, to: string, amount: st
   // Check if wallet is on Base network (chainId: 8453)
   const network = await signer.provider!.getNetwork();
   if (network.chainId !== 8453n) {
-    throw new Error("Please switch to Base network");
+    try {
+      // Request network switch to Base
+      await window.ethereum!.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x2105' }], // 8453 in hex
+      });
+    } catch (switchError: any) {
+      // Handle the case where Base network needs to be added
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum!.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x2105',
+              chainName: 'Base',
+              nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18
+              },
+              rpcUrls: ['https://mainnet.base.org'],
+              blockExplorerUrls: ['https://basescan.org']
+            }]
+          });
+        } catch (addError) {
+          throw new Error("Failed to add Base network to wallet");
+        }
+      } else {
+        throw new Error("Failed to switch to Base network");
+      }
+    }
   }
 
   const contract = await getUSDCContract(signer);
