@@ -1,0 +1,113 @@
+# PRD: Bounty Web App
+
+## Executive Summary
+A web application that allows users to post and complete small jobs with USDC cryptocurrency bounties. No login or authentication is required. Bounty creators include their Discord handle for communication. When a task is completed, the creator can transfer the USDC reward directly within the app.
+
+## Problem Statement
+Freelancers and those seeking help with small tasks need a streamlined platform to connect and transfer cryptocurrency payments without complex escrow systems, intermediaries, or account creation. Current solutions often involve too much friction with required registrations and logins.
+
+## User Personas
+
+### Bounty Creator
+- Needs help with small tasks
+- Has USDC to pay for completed work
+- Wants a simple process to post jobs and pay contractors
+
+### Bounty Hunter
+- Looking for small jobs to earn USDC
+- Has skills to complete various tasks
+- Wants a transparent system to find and get paid for work
+
+## Product Requirements
+
+### Core Requirements
+- No authentication or login required
+- Optional cryptocurrency wallet connection
+- Support for major Web3 wallets (MetaMask, WalletConnect, Coinbase Wallet) when users choose to connect
+
+### Bounty Creation
+- Form to create bounty with:
+  - Title
+  - Description
+  - USDC amount
+  - Required Discord handle field
+  - Optional deadline
+  - Tags/categories
+- USDC will be held in the user's wallet until payment (no escrow)
+- Unique URL generated for each bounty for management
+
+### Bounty Discovery
+- List view of available bounties
+- Search and filter functionality
+- Sort by bounty amount, posting date, or deadline
+- Detailed view for individual bounties
+
+### Communication
+- Discord handle displayed prominently on bounty listings
+- No in-app messaging (communication happens through Discord)
+
+### Bounty Completion
+- Management link provided to bounty creator upon creation
+- Simple flow for bounty creators to mark jobs as complete
+- Interface to input recipient's wallet address
+- Integration with USDC contracts to facilitate direct wallet-to-wallet payments for connected wallets
+- Manual payment confirmation for non-wallet users
+- Transaction confirmation and receipt generation
+
+## User Flows
+
+### Bounty Creator Flow
+1. Visit web app
+2. Create bounty with details and Discord handle
+3. Receive unique management URL
+4. Review submissions via Discord
+5. Use management URL to access completion page
+6. Connect wallet (optional) to complete payment through app interface
+   OR confirm manual payment if handled outside the platform
+
+### Bounty Hunter Flow
+1. Visit web app
+2. Browse available bounties
+3. Contact bounty creator via Discord
+4. Complete task and provide wallet address
+5. Receive USDC payment
+
+## Technical Requirements
+
+### Blockchain Integration
+- USDC smart contract integration
+- Optional wallet connection API
+- Transaction signing and verification
+
+### Frontend
+- Responsive design for mobile and desktop
+- Optional wallet connection UI
+- Bounty posting and management interface
+- Payment flow interface
+- Fallback payment confirmation for manual transactions
+
+### Backend
+- Anonymous bounty creation system
+- Secure management URLs
+- Bounty database and storage
+- Transaction recording
+- No custody of user funds
+
+## Success Metrics
+- Number of bounties posted
+- Total USDC volume processed
+- Completion rate of bounties
+- Average time to completion
+- Wallet connection rate for payments
+
+## Constraints & Considerations
+- No custody of user funds to avoid regulatory issues
+- Security considerations for permissionless bounty management
+- Clear terms of service regarding responsibility for task completion
+- Privacy considerations for wallet addresses
+- Gas fees for USDC transactions on Ethereum (consider layer 2 solutions)
+- Clear guidance for users on manual vs. in-app payments
+- Spam prevention without requiring authentication
+
+## Conclusion
+The Bounty Web App provides a frictionless platform for cryptocurrency-based microtasks with zero barrier to entry by eliminating login requirements. By focusing on essential features and leveraging existing communication channels (Discord), we can deliver a useful product quickly while accommodating both crypto-native and non-crypto users.
