@@ -24,6 +24,12 @@ export async function getUSDCContract(signer: ethers.Signer) {
 }
 
 export async function transferUSDC(signer: ethers.Signer, to: string, amount: string) {
+  // Check if wallet is on Base network (chainId: 8453)
+  const network = await signer.provider!.getNetwork();
+  if (network.chainId !== 8453n) {
+    throw new Error("Please switch to Base network");
+  }
+
   const contract = await getUSDCContract(signer);
   // USDC has 6 decimal places
   const parsedAmount = ethers.parseUnits(amount, 6);
