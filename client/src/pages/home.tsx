@@ -22,10 +22,12 @@ export default function Home() {
       bounty.description.toLowerCase().includes(search.toLowerCase());
 
     if (showMyBounties && address) {
+      // Show all bounties (open and closed) that belong to the user
       return matchesSearch && bounty.creatorAddress === address;
     }
 
-    return matchesSearch;
+    // Only show open bounties by default
+    return matchesSearch && bounty.status === "open";
   });
 
   return (
