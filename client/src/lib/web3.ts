@@ -24,8 +24,8 @@ export async function getUSDCContract(signer: ethers.Signer) {
 
 export async function transferUSDC(signer: ethers.Signer, to: string, amount: string) {
   const contract = await getUSDCContract(signer);
-  const decimals = await contract.decimals();
-  const parsedAmount = ethers.parseUnits(amount, decimals);
+  // USDC has 6 decimal places
+  const parsedAmount = ethers.parseUnits(amount, 6);
   const tx = await contract.transfer(to, parsedAmount);
   return await tx.wait();
 }
