@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -15,6 +15,7 @@ import { useLocation } from "wouter";
 export default function CreateBounty() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const form = useForm<InsertBounty>({
     resolver: zodResolver(insertBountySchema),
@@ -39,6 +40,9 @@ export default function CreateBounty() {
       return res.json();
     },
     onSuccess: (data) => {
+      // Invalidate bounties query to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/bounties"] });
+
       toast({
         title: "Bounty Created",
         description: `Save this management URL: ${window.location.origin}/manage/${data.managementUrl}`,
