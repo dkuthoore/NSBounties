@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Wallet } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty } from "@shared/schema";
@@ -25,6 +25,13 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
           <SiDiscord className="h-4 w-4" />
           <span>{bounty.discordHandle}</span>
         </div>
+
+        {bounty.creatorAddress && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+            <Wallet className="h-4 w-4" />
+            <span>{bounty.creatorAddress.slice(0, 6)}...{bounty.creatorAddress.slice(-4)}</span>
+          </div>
+        )}
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />

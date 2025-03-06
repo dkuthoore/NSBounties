@@ -12,6 +12,7 @@ export const bounties = pgTable("bounties", {
   deadline: timestamp("deadline"),
   managementUrl: text("management_url").notNull().unique(),
   recipientAddress: text("recipient_address"),
+  creatorAddress: text("creator_address"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -40,6 +41,7 @@ export const insertBountySchema = createInsertSchema(bounties)
       if (val === '') return undefined;
       return new Date(val);
     }).optional(),
+    creatorAddress: z.string().optional(),
   });
 
 export type InsertBounty = z.infer<typeof insertBountySchema>;

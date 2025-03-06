@@ -1,36 +1,30 @@
 import { Button } from "@/components/ui/button";
-import { useCallback, useState } from "react";
-import { connectWallet } from "@/lib/web3";
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { useToast } from "@/hooks/use-toast";
 
 export function WalletConnect() {
-  const [address, setAddress] = useState<string>();
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
   const { toast } = useToast();
 
-  const connect = useCallback(async () => {
-    try {
-      const { signer } = await connectWallet();
-      const address = await signer.getAddress();
-      setAddress(address);
-    } catch (err) {
-      toast({
-        title: "Error connecting wallet",
-        description: err instanceof Error ? err.message : "Unknown error",
-        variant: "destructive",
-      });
-    }
-  }, [toast]);
-
-  if (address) {
+  if (isConnected && address) {
     return (
-      <Button variant="outline">
-        {address.slice(0, 6)}...{address.slice(-4)}
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="outline">
+          {address.slice(0, 6)}...{address.slice(-4)}
+        </Button>
+        <Button variant="outline" onClick={() => disconnect()}>
+          Disconnect
+        </Button>
+      </div>
     );
   }
 
   return (
-    <Button onClick={connect}>
+    <Button 
+      onClick={() => connect({ connector: connectors[0] })}
+    >
       Connect Wallet
     </Button>
   );

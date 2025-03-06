@@ -11,11 +11,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useAccount } from 'wagmi';
 
 export default function CreateBounty() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { address } = useAccount();
 
   const form = useForm<InsertBounty>({
     resolver: zodResolver(insertBountySchema),
@@ -34,7 +36,8 @@ export default function CreateBounty() {
       const formattedData = {
         ...data,
         usdcAmount: data.usdcAmount.toString(),
-        deadline: data.deadline ? new Date(data.deadline).toISOString() : undefined
+        deadline: data.deadline ? new Date(data.deadline).toISOString() : undefined,
+        creatorAddress: address,
       };
       const res = await apiRequest("POST", "/api/bounties", formattedData);
       return res.json();
@@ -57,6 +60,18 @@ export default function CreateBounty() {
       });
     },
   });
+
+  if (!address) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p>Please connect your wallet to create a bounty.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8">

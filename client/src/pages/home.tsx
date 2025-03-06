@@ -6,22 +6,42 @@ import { Link } from "wouter";
 import { Search, Plus } from "lucide-react";
 import type { Bounty } from "@shared/schema";
 import { useState } from "react";
+import { useAccount } from 'wagmi';
 
 export default function Home() {
   const [search, setSearch] = useState("");
+  const [showMyBounties, setShowMyBounties] = useState(false);
+  const { address } = useAccount();
 
   const { data: bounties = [], isLoading } = useQuery<Bounty[]>({
     queryKey: ["/api/bounties"],
   });
 
-  const filteredBounties = bounties.filter(bounty => 
-    bounty.title.toLowerCase().includes(search.toLowerCase()) ||
-    bounty.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredBounties = bounties.filter(bounty => {
+    const matchesSearch = bounty.title.toLowerCase().includes(search.toLowerCase()) ||
+      bounty.description.toLowerCase().includes(search.toLowerCase());
+
+    if (showMyBounties && address) {
+      return matchesSearch && bounty.creatorAddress === address;
+    }
+
+    return matchesSearch;
+  });
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-end mb-8">
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex gap-4 items-center">
+          {address && (
+            <Button
+              variant="outline"
+              onClick={() => setShowMyBounties(!showMyBounties)}
+              className={showMyBounties ? "bg-primary/20" : ""}
+            >
+              {showMyBounties ? "Show All Bounties" : "Show My Bounties"}
+            </Button>
+          )}
+        </div>
         <Link href="/create">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
