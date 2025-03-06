@@ -127,9 +127,10 @@ export default function CreateBounty() {
                     <FormLabel>Deadline (Optional)</FormLabel>
                     <FormControl>
                       <Input
-                        type="datetime-local"
+                        type="date"
                         {...field}
                         value={value || ''}
+                        min={new Date().toISOString().split('T')[0]}
                         onChange={e => onChange(e.target.value || undefined)}
                       />
                     </FormControl>

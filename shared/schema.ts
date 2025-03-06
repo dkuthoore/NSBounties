@@ -27,20 +27,18 @@ export const insertBountySchema = createInsertSchema(bounties)
   })
   .extend({
     deadline: z.union([
-      z.string().datetime(),
+      z.string().refine(val => {
+        if (!val) return true;
+        const date = new Date(val);
+        return date > new Date();
+      }, "Deadline must be in the future"),
       z.string().length(0),
       z.null(),
       z.undefined()
     ]).transform(val => {
       if (!val) return undefined;
       if (val === '') return undefined;
-      try {
-        // Add seconds if not provided by datetime-local input
-        const normalizedDate = val.includes(':00.') ? val : `${val}:00.000Z`;
-        return new Date(normalizedDate);
-      } catch (err) {
-        return undefined;
-      }
+      return new Date(val);
     }).optional(),
   });
 
