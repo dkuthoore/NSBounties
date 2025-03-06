@@ -28,6 +28,14 @@ export default function Home() {
 
     // Only show open bounties by default
     return matchesSearch && bounty.status === "open";
+  }).sort((a, b) => {
+    if (showMyBounties) {
+      // First sort by status (open first)
+      if (a.status === "open" && b.status !== "open") return -1;
+      if (a.status !== "open" && b.status === "open") return 1;
+    }
+    // Then sort by date (newest first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   return (
