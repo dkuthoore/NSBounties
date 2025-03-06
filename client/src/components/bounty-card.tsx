@@ -9,7 +9,9 @@ import { Link } from "wouter";
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
   const openDiscordDM = () => {
-    window.open(`discord:///users/${bounty.discordHandle}`, '_blank');
+    // Remove @ if present and encode the username
+    const username = bounty.discordHandle.replace('@', '');
+    window.open(`discord://discord.com/users/${encodeURIComponent(username)}`, '_blank');
   };
 
   return (

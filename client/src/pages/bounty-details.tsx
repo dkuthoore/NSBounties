@@ -59,7 +59,9 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
   });
 
   const openDiscordDM = () => {
-    window.open(`discord:///users/${bounty?.discordHandle}`, '_blank');
+    if (!bounty?.discordHandle) return;
+    const username = bounty.discordHandle.replace('@', '');
+    window.open(`discord://discord.com/users/${encodeURIComponent(username)}`, '_blank');
   };
 
   if (isLoading || !bounty) {
