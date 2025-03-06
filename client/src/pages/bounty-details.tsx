@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, ExternalLink } from "lucide-react";
+import { Calendar, Clock, ExternalLink, ArrowLeft } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty } from "@shared/schema";
 import { useAccount } from 'wagmi';
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { connectWallet, transferUSDC } from "@/lib/web3";
 import { useState } from "react";
@@ -124,6 +124,14 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
 
   return (
     <div className="container mx-auto py-8">
+      <div className="mb-4">
+        <Link href="/">
+          <Button variant="ghost" className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Bounties
+          </Button>
+        </Link>
+      </div>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
