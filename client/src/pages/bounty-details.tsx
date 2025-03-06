@@ -60,8 +60,17 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
 
   const openDiscordDM = () => {
     if (!bounty?.discordHandle) return;
-    const username = bounty.discordHandle.replace('@', '');
-    window.open(`discord://discord.com/users/${encodeURIComponent(username)}`, '_blank');
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(bounty.discordHandle);
+
+    // Show toast
+    toast({
+      description: `Copied ${bounty.discordHandle} to clipboard`,
+    });
+
+    // Open Discord
+    window.open(`discord://discord.com/users/${encodeURIComponent(bounty.discordHandle)}`, '_blank');
   };
 
   if (isLoading || !bounty) {

@@ -6,12 +6,22 @@ import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty } from "@shared/schema";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
+  const { toast } = useToast();
+
   const openDiscordDM = () => {
-    // Remove @ if present and encode the username
-    const username = bounty.discordHandle.replace('@', '');
-    window.open(`discord://discord.com/users/${encodeURIComponent(username)}`, '_blank');
+    // Copy to clipboard
+    navigator.clipboard.writeText(bounty.discordHandle);
+
+    // Show toast
+    toast({
+      description: `Copied ${bounty.discordHandle} to clipboard`,
+    });
+
+    // Open Discord
+    window.open(`discord://discord.com/users/${encodeURIComponent(bounty.discordHandle)}`, '_blank');
   };
 
   return (
