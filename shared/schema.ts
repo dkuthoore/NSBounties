@@ -26,7 +26,16 @@ export const insertBountySchema = createInsertSchema(bounties)
     status: true
   })
   .extend({
-    deadline: z.string().datetime().optional().transform(val => val ? new Date(val) : undefined),
+    deadline: z.union([
+      z.string().datetime(),
+      z.string().length(0),
+      z.null(),
+      z.undefined()
+    ]).transform(val => {
+      if (!val) return undefined;
+      if (val === '') return undefined;
+      return new Date(val);
+    }),
   });
 
 export type InsertBounty = z.infer<typeof insertBountySchema>;

@@ -23,7 +23,7 @@ export default function CreateBounty() {
       description: "",
       usdcAmount: "",
       discordHandle: "",
-      deadline: "",
+      deadline: undefined,
     },
   });
 
@@ -116,11 +116,16 @@ export default function CreateBounty() {
               <FormField
                 control={form.control}
                 name="deadline"
-                render={({ field }) => (
+                render={({ field: { value, onChange, ...field } }) => (
                   <FormItem>
                     <FormLabel>Deadline (Optional)</FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" {...field} />
+                      <Input 
+                        type="datetime-local" 
+                        {...field}
+                        value={value || ''}
+                        onChange={e => onChange(e.target.value || undefined)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
