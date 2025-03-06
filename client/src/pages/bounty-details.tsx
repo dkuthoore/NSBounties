@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Calendar, Clock, ExternalLink } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
@@ -10,12 +11,15 @@ import { useAccount } from 'wagmi';
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
+import { connectWallet, transferUSDC } from "@/lib/web3";
+import { useState } from "react";
 
 export default function BountyDetails({ params }: { params: { id: string } }) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { address } = useAccount();
+  const [recipientAddress, setRecipientAddress] = useState("");
 
   const { data: bounty, isLoading } = useQuery<Bounty>({
     queryKey: [`/api/bounties/${params.id}`],
@@ -41,9 +45,11 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
 
   const closeBounty = useMutation({
     mutationFn: async () => {
-      await apiRequest("PATCH", `/api/bounties/${params.id}/status`, {
+      const res = await apiRequest("PATCH", `/api/bounties/${params.id}/status`, {
         status: "closed",
+        recipientAddress,
       });
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/bounties/${params.id}`] });
@@ -57,6 +63,22 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
       });
     },
   });
+
+  const handlePayment = async () => {
+    try {
+      const { signer } = await connectWallet();
+      await transferUSDC(signer, recipientAddress, bounty!.usdcAmount.toString());
+      await closeBounty.mutateAsync();
+      toast({ title: "Payment successful" });
+      setLocation("/");
+    } catch (err) {
+      toast({
+        title: "Payment failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    }
+  };
 
   const openDiscordDM = () => {
     if (!bounty?.discordHandle) return;
@@ -78,6 +100,21 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
       <div className="container mx-auto py-8">
         <Card className="animate-pulse">
           <CardContent className="h-64" />
+        </Card>
+      </div>
+    );
+  }
+
+  if (bounty.status === "closed") {
+    return (
+      <div className="container mx-auto py-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Bounty Completed</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>This bounty has been marked as complete.</p>
+          </CardContent>
         </Card>
       </div>
     );
@@ -135,25 +172,38 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
           </div>
 
           {isCreator && bounty.status === "open" && (
-            <div className="flex gap-4 pt-4 border-t">
-              <Button 
-                variant="outline" 
-                onClick={() => closeBounty.mutate()}
-                disabled={closeBounty.isPending}
-              >
-                Mark as Closed
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={() => {
-                  if (window.confirm("Are you sure you want to delete this bounty?")) {
-                    deleteBounty.mutate();
-                  }
-                }}
-                disabled={deleteBounty.isPending}
-              >
-                Delete Bounty
-              </Button>
+            <div className="flex flex-col gap-4 pt-4 border-t">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Recipient Address
+                </label>
+                <Input
+                  value={recipientAddress}
+                  onChange={(e) => setRecipientAddress(e.target.value)}
+                  placeholder="0x..."
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={handlePayment}
+                  disabled={!recipientAddress || closeBounty.isPending}
+                >
+                  Complete & Pay
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this bounty?")) {
+                      deleteBounty.mutate();
+                    }
+                  }}
+                  disabled={deleteBounty.isPending}
+                >
+                  Delete Bounty
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
