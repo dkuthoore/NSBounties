@@ -11,12 +11,12 @@ import { useEffect } from "react";
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-primary/5">
+      <header className="border-b bg-primary/10">
         <div className="container mx-auto py-4">
           <h1 className="text-3xl font-bold text-primary">NS Bounties</h1>
         </div>
       </header>
-      <main>
+      <main className="bg-primary/5">
         {children}
       </main>
     </div>

@@ -9,7 +9,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [search, setSearch] = useState("");
-  
+
   const { data: bounties = [], isLoading } = useQuery<Bounty[]>({
     queryKey: ["/api/bounties"],
   });
@@ -21,8 +21,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Bounties</h1>
+      <div className="flex justify-end mb-8">
         <Link href="/create">
           <Button>
             <Plus className="mr-2 h-4 w-4" />
