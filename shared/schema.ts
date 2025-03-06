@@ -34,8 +34,14 @@ export const insertBountySchema = createInsertSchema(bounties)
     ]).transform(val => {
       if (!val) return undefined;
       if (val === '') return undefined;
-      return new Date(val);
-    }),
+      try {
+        // Add seconds if not provided by datetime-local input
+        const normalizedDate = val.includes(':00.') ? val : `${val}:00.000Z`;
+        return new Date(normalizedDate);
+      } catch (err) {
+        return undefined;
+      }
+    }).optional(),
   });
 
 export type InsertBounty = z.infer<typeof insertBountySchema>;

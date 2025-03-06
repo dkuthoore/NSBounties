@@ -32,7 +32,8 @@ export default function CreateBounty() {
       // Format the data before sending to server
       const formattedData = {
         ...data,
-        deadline: data.deadline || undefined
+        usdcAmount: data.usdcAmount.toString(),
+        deadline: data.deadline ? new Date(data.deadline).toISOString() : undefined
       };
       const res = await apiRequest("POST", "/api/bounties", formattedData);
       return res.json();
@@ -125,8 +126,8 @@ export default function CreateBounty() {
                   <FormItem>
                     <FormLabel>Deadline (Optional)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="datetime-local" 
+                      <Input
+                        type="datetime-local"
                         {...field}
                         value={value || ''}
                         onChange={e => onChange(e.target.value || undefined)}
