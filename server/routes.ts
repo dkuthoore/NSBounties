@@ -46,6 +46,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update bounty
+  app.patch("/api/bounties/:id", async (req, res) => {
+    try {
+      const bounty = await storage.getBounty(req.params.id);
+      if (!bounty) {
+        res.status(404).json({ message: "Bounty not found" });
+        return;
+      }
+
+      // Ensure the creator is updating their own bounty
+      if (bounty.creatorAddress !== req.body.creatorAddress) {
+        res.status(403).json({ message: "Not authorized to update this bounty" });
+        return;
+      }
+
+      const data = insertBountySchema.partial().parse(req.body);
+      const updatedBounty = await storage.updateBounty(req.params.id, data);
+      res.json(updatedBounty);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid bounty data", errors: err.errors });
+        return;
+      }
+      throw err;
+    }
+  });
+
   // Update bounty status
   app.patch("/api/bounties/:id/status", async (req, res) => {
     const schema = z.object({

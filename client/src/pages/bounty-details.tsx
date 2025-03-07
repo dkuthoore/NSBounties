@@ -3,16 +3,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, ExternalLink, ArrowLeft } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar, Clock, ExternalLink, ArrowLeft, Edit2 } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
-import type { Bounty } from "@shared/schema";
+import type { Bounty, InsertBounty } from "@shared/schema";
 import { useAccount } from 'wagmi';
 import { useToast } from "@/hooks/use-toast";
 import { useLocation, Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { connectWallet, transferUSDC } from "@/lib/web3";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { insertBountySchema } from "@shared/schema";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 export default function BountyDetails({ params }: { params: { id: string } }) {
   const { toast } = useToast();
@@ -20,9 +25,43 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
   const queryClient = useQueryClient();
   const { address } = useAccount();
   const [recipientAddress, setRecipientAddress] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   const { data: bounty, isLoading } = useQuery<Bounty>({
     queryKey: [`/api/bounties/${params.id}`],
+  });
+
+  const form = useForm<InsertBounty>({
+    resolver: zodResolver(insertBountySchema),
+    defaultValues: {
+      title: bounty?.title || "",
+      description: bounty?.description || "",
+      usdcAmount: bounty?.usdcAmount.toString() || "",
+      discordHandle: bounty?.discordHandle || "",
+      deadline: bounty?.deadline ? new Date(bounty.deadline).toISOString().split('T')[0] : undefined,
+    },
+  });
+
+  const updateBounty = useMutation({
+    mutationFn: async (data: Partial<InsertBounty>) => {
+      const res = await apiRequest("PATCH", `/api/bounties/${params.id}`, {
+        ...data,
+        creatorAddress: address,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/bounties/${params.id}`] });
+      toast({ title: "Bounty updated successfully" });
+      setIsEditing(false);
+    },
+    onError: (err) => {
+      toast({
+        title: "Error updating bounty",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
+    },
   });
 
   const deleteBounty = useMutation({
@@ -122,6 +161,109 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
 
   const isCreator = address && bounty.creatorAddress === address;
 
+  if (isEditing && isCreator) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="mb-4">
+          <Button variant="ghost" onClick={() => setIsEditing(false)} className="flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Details
+          </Button>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Bounty</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit((data) => updateBounty.mutate(data))} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="usdcAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>USDC Amount</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="discordHandle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Discord Handle</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="deadline"
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <FormItem>
+                      <FormLabel>Deadline (Optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          value={value || ''}
+                          min={new Date().toISOString().split('T')[0]}
+                          onChange={e => onChange(e.target.value || undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full" disabled={updateBounty.isPending}>
+                  Save Changes
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-4">
@@ -136,9 +278,21 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-bold">{bounty.title}</CardTitle>
-            <Badge variant={bounty.status === "open" ? "default" : "secondary"}>
-              {bounty.status}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {isCreator && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setIsEditing(true)}
+                  className="h-8 w-8"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
+              <Badge variant={bounty.status === "open" ? "default" : "secondary"}>
+                {bounty.status}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">

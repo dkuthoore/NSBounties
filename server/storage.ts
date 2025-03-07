@@ -9,6 +9,7 @@ export interface IStorage {
   getBountyByManagementUrl(url: string): Promise<Bounty | undefined>;
   listBounties(): Promise<Bounty[]>;
   updateBountyStatus(id: string, status: "open" | "closed", recipientAddress?: string): Promise<Bounty>;
+  updateBounty(id: string, updates: Partial<InsertBounty>): Promise<Bounty>;
   deleteBounty(id: string): Promise<void>;
 }
 
@@ -48,6 +49,18 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         status,
         recipientAddress,
+        updatedAt: new Date(),
+      })
+      .where(eq(bounties.id, id))
+      .returning();
+    return bounty;
+  }
+
+  async updateBounty(id: string, updates: Partial<InsertBounty>): Promise<Bounty> {
+    const [bounty] = await db
+      .update(bounties)
+      .set({ 
+        ...updates,
         updatedAt: new Date(),
       })
       .where(eq(bounties.id, id))
