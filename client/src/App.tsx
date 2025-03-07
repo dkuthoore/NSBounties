@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { WagmiConfig } from "wagmi";
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { config } from "@/lib/wagmi";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
@@ -48,14 +49,16 @@ function App() {
   }, []);
 
   return (
-    <WagmiConfig config={config}>
-      <QueryClientProvider client={queryClient}>
-        <Layout>
-          <Router />
-        </Layout>
-        <Toaster />
-      </QueryClientProvider>
-    </WagmiConfig>
+    <QueryClientProvider client={queryClient}>
+      <WagmiConfig config={config}>
+        <RainbowKitProvider>
+          <Layout>
+            <Router />
+          </Layout>
+          <Toaster />
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </QueryClientProvider>
   );
 }
 

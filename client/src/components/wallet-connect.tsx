@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -13,7 +14,7 @@ import { useState } from "react";
 
 export function WalletConnect() {
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
+  const { openConnectModal } = useConnectModal();
   const { disconnect } = useDisconnect();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -26,8 +27,8 @@ export function WalletConnect() {
         return;
       }
 
-      // On desktop, proceed with normal connection
-      connect({ connector: connectors[0] });
+      // On desktop, open RainbowKit's connect modal
+      openConnectModal?.();
     } catch (err) {
       toast({
         title: "Connection Failed",
