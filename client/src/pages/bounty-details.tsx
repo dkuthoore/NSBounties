@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation, Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { connectWallet, transferUSDC } from "@/lib/web3";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBountySchema } from "@shared/schema";
@@ -34,13 +34,26 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
   const form = useForm<InsertBounty>({
     resolver: zodResolver(insertBountySchema),
     defaultValues: {
-      title: bounty?.title || "",
-      description: bounty?.description || "",
-      usdcAmount: bounty?.usdcAmount.toString() || "",
-      discordHandle: bounty?.discordHandle || "",
-      deadline: bounty?.deadline ? new Date(bounty.deadline).toISOString().split('T')[0] : undefined,
+      title: "",
+      description: "",
+      usdcAmount: "",
+      discordHandle: "",
+      deadline: undefined,
     },
   });
+
+  // Update form values when bounty data is loaded
+  useEffect(() => {
+    if (bounty) {
+      form.reset({
+        title: bounty.title,
+        description: bounty.description,
+        usdcAmount: bounty.usdcAmount.toString(),
+        discordHandle: bounty.discordHandle,
+        deadline: bounty.deadline ? new Date(bounty.deadline).toISOString().split('T')[0] : undefined,
+      });
+    }
+  }, [bounty, form]);
 
   const updateBounty = useMutation({
     mutationFn: async (data: Partial<InsertBounty>) => {

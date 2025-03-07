@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Link } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -17,7 +17,11 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="border-b bg-primary/10">
         <div className="container mx-auto py-4 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-primary">NS Bounties 🤑</h1>
+          <Link href="/">
+            <h1 className="text-3xl font-bold text-primary hover:opacity-80 cursor-pointer">
+              NS Bounties 🤑
+            </h1>
+          </Link>
           <WalletConnect />
         </div>
       </header>
