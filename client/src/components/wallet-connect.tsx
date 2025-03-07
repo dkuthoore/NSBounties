@@ -10,18 +10,7 @@ export function WalletConnect() {
 
   const handleConnect = async () => {
     try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      if (isMobile && !window.ethereum) {
-        // If on mobile and no wallet detected, show guidance
-        toast({
-          title: "Mobile Wallet Required",
-          description: "Please open this site in your wallet's browser (like MetaMask mobile) or use a browser with a wallet extension.",
-          duration: 6000,
-        });
-        return;
-      }
-
+      // Attempt to connect - this will trigger the wallet app on mobile
       connect({ connector: connectors[0] });
     } catch (err) {
       toast({

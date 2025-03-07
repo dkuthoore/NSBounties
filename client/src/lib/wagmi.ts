@@ -7,9 +7,7 @@ import { createWeb3Modal } from '@web3modal/wagmi';
 export const config = createConfig({
   chains: [base],
   connectors: [
-    injected({
-      target: 'metaMask', // This will work with MetaMask mobile browser and other mobile wallets
-    }),
+    injected(), // Allow any injected provider, not just MetaMask
   ],
   transports: {
     [base.id]: http()
