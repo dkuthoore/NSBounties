@@ -1,6 +1,58 @@
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+
+# Production
+build
 dist
-.DS_Store
+.next
+out
 server/public
-vite.config.ts.*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Replit specific
+.replit
+replit.nix
+.config
+.upm
+.cache
 *.tar.gz
+
+# Build files
+*.tsbuildinfo
+vite.config.ts.*
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Drizzle
+drizzle.config.ts
