@@ -3,8 +3,64 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBountySchema } from "@shared/schema";
 import { z } from "zod";
+import axios from "axios";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Sync bounties from bountycaster.xyz
+  app.post("/api/bounties/sync", async (_req, res) => {
+    try {
+      // Fetch bounties from bountycaster
+      const response = await axios.get('https://www.bountycaster.xyz/api/v1/bounties/open');
+      const bounties = response.data.bounties;
+
+      // Filter bounties that contain @ns
+      const filteredBounties = bounties.filter(bounty => 
+        bounty.summary_text.toLowerCase().includes('@ns')
+      );
+
+      const results = [];
+
+      // Process each filtered bounty
+      for (const bounty of filteredBounties) {
+        try {
+          const bountyData = {
+            title: bounty.title,
+            description: bounty.summary_text,
+            usdcAmount: bounty.reward_summary.usd_value,
+            discordHandle: bounty.poster.short_name,
+            deadline: bounty.expiration_date ? new Date(bounty.expiration_date) : undefined,
+            creatorAddress: undefined, // External bounties don't have this
+          };
+
+          // Validate and create bounty using existing schema
+          const validatedData = insertBountySchema.parse(bountyData);
+          const createdBounty = await storage.createBounty(validatedData);
+          results.push({
+            status: 'success',
+            bounty: createdBounty,
+          });
+        } catch (err) {
+          results.push({
+            status: 'error',
+            error: err instanceof Error ? err.message : 'Unknown error',
+            bounty: bounty.title,
+          });
+        }
+      }
+
+      res.json({
+        total: filteredBounties.length,
+        results,
+      });
+    } catch (err) {
+      console.error('Error syncing bounties:', err);
+      res.status(500).json({ 
+        message: "Failed to sync bounties",
+        error: err instanceof Error ? err.message : 'Unknown error'
+      });
+    }
+  });
+
   // List bounties
   app.get("/api/bounties", async (_req, res) => {
     const bounties = await storage.listBounties();
