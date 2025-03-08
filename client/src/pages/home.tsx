@@ -42,7 +42,13 @@ export default function Home() {
       if (a.status === "open" && b.status !== "open") return -1;
       if (a.status !== "open" && b.status === "open") return 1;
     }
-    // Then sort by date (newest first)
+    // Then sort by amount (highest first)
+    const amountA = Number(a.usdcAmount);
+    const amountB = Number(b.usdcAmount);
+    if (amountA !== amountB) {
+      return amountB - amountA;
+    }
+    // If amounts are equal, sort by date (newest first)
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
