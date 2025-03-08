@@ -1,6 +1,6 @@
 # NS Bounties 🤑
 
-A permissionless bounty platform enabling users to create and track USDC-based bounties with enhanced multi-wallet connectivity and mobile experiences.
+A permissionless bounty platform enabling NS Members to create and track USDC-based bounties with  multi-wallet connectivity.
 
 ## Features
 
