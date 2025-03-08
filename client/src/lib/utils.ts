@@ -17,22 +17,26 @@ export function formatTextWithLinks(text: string): ReactNode[] {
   const parts = text.split(urlRegex);
   const matches = text.match(urlRegex) || [];
   const result: ReactNode[] = [];
+  let matchIndex = 0;
 
   parts.forEach((part, i) => {
-    if (part) {
+    // Add non-URL text
+    if (part && !part.match(urlRegex)) {
       result.push(part);
     }
-    if (matches[i]) {
+    // Add URL as a link
+    if (matches[matchIndex] && i < parts.length - 1) {
       result.push(
         React.createElement('a', {
-          key: i,
-          href: matches[i],
+          key: matchIndex,
+          href: matches[matchIndex],
           target: '_blank',
           rel: 'noopener noreferrer',
           className: 'text-primary hover:underline',
-          children: matches[i]
+          children: matches[matchIndex]
         })
       );
+      matchIndex++;
     }
   });
 
