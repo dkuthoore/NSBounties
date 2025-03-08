@@ -13,8 +13,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await axios.get('https://www.bountycaster.xyz/api/v1/bounties/open');
       const bounties = response.data.bounties;
 
+      // Log the response structure
+      console.log('Bountycaster API Response:', {
+        responseStatus: response.status,
+        totalBounties: bounties?.length || 0,
+        sampleBounty: bounties?.[0]
+      });
+
       // Filter bounties that contain @ns
-      const filteredBounties = bounties.filter(bounty => 
+      const filteredBounties = bounties.filter(bounty =>
         bounty.summary_text.toLowerCase().includes('@ns')
       );
 
@@ -23,6 +30,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process each filtered bounty
       for (const bounty of filteredBounties) {
         try {
+          // Log the bounty data we're trying to process
+          console.log('Processing bounty:', {
+            title: bounty.title,
+            rewardSummary: bounty.reward_summary,
+            hasDiscordHandle: !!bounty.poster?.short_name
+          });
+
           const bountyData = {
             title: bounty.title,
             description: bounty.summary_text,
@@ -40,6 +54,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             bounty: createdBounty,
           });
         } catch (err) {
+          console.error('Error processing bounty:', {
+            bountyTitle: bounty.title,
+            error: err instanceof Error ? err.message : 'Unknown error',
+            bountyData: bounty
+          });
+
           results.push({
             status: 'error',
             error: err instanceof Error ? err.message : 'Unknown error',
@@ -54,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (err) {
       console.error('Error syncing bounties:', err);
-      res.status(500).json({ 
+      res.status(500).json({
         message: "Failed to sync bounties",
         error: err instanceof Error ? err.message : 'Unknown error'
       });
