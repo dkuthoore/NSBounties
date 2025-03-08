@@ -7,7 +7,8 @@ export const bounties = pgTable("bounties", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   usdcAmount: decimal("usdc_amount", { precision: 10, scale: 2 }).notNull(),
-  discordHandle: text("discord_handle").notNull(),
+  discordHandle: text("discord_handle"),
+  farcasterHandle: text("farcaster_handle"),
   status: text("status", { enum: ["open", "closed"] }).notNull().default("open"),
   deadline: timestamp("deadline"),
   managementUrl: text("management_url").notNull().unique(),
@@ -42,6 +43,8 @@ export const insertBountySchema = createInsertSchema(bounties)
       return new Date(val);
     }).optional(),
     creatorAddress: z.string().optional(),
+    discordHandle: z.string().optional(),
+    farcasterHandle: z.string().optional(),
   });
 
 export type InsertBounty = z.infer<typeof insertBountySchema>;

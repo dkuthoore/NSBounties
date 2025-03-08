@@ -41,7 +41,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             title: bounty.title,
             description: bounty.summary_text,
             usdcAmount: bounty.reward_summary.usd_value,
-            discordHandle: bounty.poster.short_name,
+            farcasterHandle: bounty.poster.short_name, // Use farcaster_handle instead of discord_handle
             deadline: bounty.expiration_date ? bounty.expiration_date : undefined,
             creatorAddress: undefined, // External bounties don't have this
           };
