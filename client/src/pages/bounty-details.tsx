@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Clock, ExternalLink, ArrowLeft, Edit2 } from "lucide-react";
 import { SiDiscord } from "react-icons/si";
+import { SiFarcaster } from "react-icons/si"; // Import SiFarcaster
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty, InsertBounty } from "@shared/schema";
 import { useAccount } from 'wagmi';
@@ -39,6 +40,7 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
       description: "",
       usdcAmount: "",
       discordHandle: "",
+      farcasterHandle: "", // Added farcasterHandle
       deadline: undefined,
     },
   });
@@ -51,6 +53,7 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
         description: bounty.description,
         usdcAmount: bounty.usdcAmount.toString(),
         discordHandle: bounty.discordHandle,
+        farcasterHandle: bounty.farcasterHandle, // Added farcasterHandle
         deadline: bounty.deadline ? new Date(bounty.deadline).toISOString().split('T')[0] : undefined,
       });
     }
@@ -246,6 +249,19 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="farcasterHandle" // Added farcasterHandle field
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Farcaster Handle</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -324,15 +340,27 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
 
           <div>
             <h3 className="text-lg font-semibold mb-2">Contact</h3>
-            <Button 
-              variant="outline" 
-              onClick={openDiscordDM}
-              className="flex items-center gap-2"
-            >
-              <SiDiscord className="h-4 w-4" />
-              {bounty.discordHandle}
-              <ExternalLink className="h-4 w-4" />
-            </Button>
+            {bounty.discordHandle ? (
+              <Button 
+                variant="outline" 
+                onClick={openDiscordDM}
+                className="flex items-center gap-2"
+              >
+                <SiDiscord className="h-4 w-4" />
+                {bounty.discordHandle}
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            ) : bounty.farcasterHandle ? (
+              <Button 
+                variant="outline" 
+                onClick={() => window.open(`https://warpcast.com/${bounty.farcasterHandle.replace('@', '')}`, '_blank')}
+                className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
+              >
+                <SiFarcaster className="h-4 w-4" />
+                {bounty.farcasterHandle}
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            ) : null}
           </div>
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground">
