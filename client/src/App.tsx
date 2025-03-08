@@ -4,13 +4,16 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { WagmiConfig } from "wagmi";
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { config } from "@/lib/wagmi";
+import { AuthKitProvider } from '@farcaster/auth-kit';
+import { config as wagmiConfig } from "@/lib/wagmi";
+import { config as farcasterConfig } from "@/lib/farcaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import CreateBounty from "@/pages/create-bounty";
 import ManageBounty from "@/pages/manage-bounty";
 import { useEffect } from "react";
 import { WalletConnect } from "@/components/wallet-connect";
+import { FarcasterConnect } from "@/components/farcaster-connect";
 import BountyDetails from "@/pages/bounty-details";
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -23,7 +26,10 @@ function Layout({ children }: { children: React.ReactNode }) {
               NS Bounties 🤑
             </h1>
           </Link>
-          <WalletConnect />
+          <div className="flex items-center gap-4">
+            <FarcasterConnect />
+            <WalletConnect />
+          </div>
         </div>
       </header>
       <main className="bg-primary/5">{children}</main>
@@ -50,12 +56,14 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <WagmiConfig config={config}>
+      <WagmiConfig config={wagmiConfig}>
         <RainbowKitProvider>
-          <Layout>
-            <Router />
-          </Layout>
-          <Toaster />
+          <AuthKitProvider config={farcasterConfig}>
+            <Layout>
+              <Router />
+            </Layout>
+            <Toaster />
+          </AuthKitProvider>
         </RainbowKitProvider>
       </WagmiConfig>
     </QueryClientProvider>
