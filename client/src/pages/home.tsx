@@ -7,11 +7,13 @@ import { Search, Plus } from "lucide-react";
 import type { Bounty } from "@shared/schema";
 import { useState } from "react";
 import { useAccount } from 'wagmi';
+import { useProfile } from '@farcaster/auth-kit';
 
 export default function Home() {
   const [search, setSearch] = useState("");
   const [showMyBounties, setShowMyBounties] = useState(false);
   const { address } = useAccount();
+  const { isAuthenticated: isFarcasterAuthenticated, profile: farcasterProfile } = useProfile();
 
   const { data: bounties = [], isLoading } = useQuery<Bounty[]>({
     queryKey: ["/api/bounties"],
@@ -21,9 +23,15 @@ export default function Home() {
     const matchesSearch = bounty.title.toLowerCase().includes(search.toLowerCase()) ||
       bounty.description.toLowerCase().includes(search.toLowerCase());
 
-    if (showMyBounties && address) {
-      // Show all bounties (open and closed) that belong to the user
-      return matchesSearch && bounty.creatorAddress === address;
+    if (showMyBounties) {
+      if (address) {
+        // Show all bounties (open and closed) that belong to the user's wallet
+        return matchesSearch && bounty.creatorAddress === address;
+      } else if (farcasterProfile?.username) {
+        // Show all bounties (open and closed) that belong to the user's Farcaster handle
+        const userFarcasterHandle = `@${farcasterProfile.username}`;
+        return matchesSearch && bounty.farcasterHandle === userFarcasterHandle;
+      }
     }
 
     // Only show open bounties by default
@@ -42,7 +50,7 @@ export default function Home() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <div className="flex gap-4 items-center">
-          {address && (
+          {(address || isFarcasterAuthenticated) && (
             <Button
               variant="outline"
               onClick={() => setShowMyBounties(!showMyBounties)}
