@@ -11,7 +11,7 @@ export function FarcasterConnect() {
           @{profile.username}
         </div>
       ) : (
-        <div className="[&>button]:px-4 [&>button]:py-2 [&>button]:h-10 [&>button]:min-w-[140px]">
+        <div className="[&>button]:px-3 [&>button]:py-1.5 [&>button]:h-9 [&>button]:min-w-[120px]">
           <SignInButton />
         </div>
       )}
