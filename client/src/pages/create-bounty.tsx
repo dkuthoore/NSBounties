@@ -128,21 +128,19 @@ export default function CreateBounty() {
                 )}
               />
 
-              {!farcasterProfile?.username && (
-                <FormField
-                  control={form.control}
-                  name="discordHandle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Discord / Farcaster Handle</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+              <FormField
+                control={form.control}
+                name={farcasterProfile?.username ? "farcasterHandle" : "discordHandle"}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Discord / Farcaster Handle</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
