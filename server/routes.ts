@@ -42,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             description: bounty.summary_text,
             usdcAmount: bounty.reward_summary.usd_value,
             discordHandle: bounty.poster.short_name,
-            deadline: bounty.expiration_date ? new Date(bounty.expiration_date) : undefined,
+            deadline: bounty.expiration_date ? bounty.expiration_date : undefined,
             creatorAddress: undefined, // External bounties don't have this
           };
 
