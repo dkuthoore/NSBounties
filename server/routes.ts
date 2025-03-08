@@ -6,10 +6,42 @@ import { z } from "zod";
 import axios from "axios";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add a new function to clean up expired bounties
+  async function cleanupExpiredBounties() {
+    try {
+      const allBounties = await storage.listBounties();
+      const now = new Date();
+      let deletedCount = 0;
+
+      for (const bounty of allBounties) {
+        if (bounty.deadline && new Date(bounty.deadline) < now) {
+          await storage.deleteBounty(bounty.id);
+          deletedCount++;
+          console.log('Deleted expired bounty:', {
+            title: bounty.title,
+            deadline: bounty.deadline
+          });
+        }
+      }
+
+      if (deletedCount > 0) {
+        console.log(`Cleaned up ${deletedCount} expired bounties`);
+      }
+
+      return deletedCount;
+    } catch (err) {
+      console.error('Error cleaning up expired bounties:', err);
+      throw err;
+    }
+  }
+
   // Sync bounties from bountycaster.xyz
   app.post("/api/bounties/sync", async (_req, res) => {
     try {
-      // Fetch bounties from bountycaster
+      // First, clean up expired bounties
+      const deletedCount = await cleanupExpiredBounties();
+
+      // Then fetch bounties from bountycaster
       const response = await axios.get('https://www.bountycaster.xyz/api/v1/bounties/open');
       const bounties = response.data.bounties;
 
@@ -87,6 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         total: filteredBounties.length,
+        deletedExpired: deletedCount,
         results,
       });
     } catch (err) {
