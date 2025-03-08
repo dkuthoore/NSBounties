@@ -44,15 +44,25 @@ app.use((req, res, next) => {
   // Set up automatic bounty sync every hour
   const syncBounties = async () => {
     try {
-      await axios.post('http://localhost:5000/api/bounties/sync');
-      log('Automatic bounty sync completed');
+      log('Starting automatic bounty sync...');
+      const port = 5000;
+      await axios.post(`http://0.0.0.0:${port}/api/bounties/sync`);
+      log('Automatic bounty sync completed successfully');
     } catch (err) {
-      log('Error during automatic bounty sync:', err instanceof Error ? err.message : String(err));
+      if (axios.isAxiosError(err)) {
+        log('Error during automatic bounty sync:', 
+          err.message, 
+          err.response?.data || 'No response data'
+        );
+      } else {
+        log('Error during automatic bounty sync:', err instanceof Error ? err.message : String(err));
+      }
     }
   };
 
   // Initial sync on server start
-  syncBounties();
+  log('Initiating first bounty sync on server start...');
+  setTimeout(syncBounties, 5000); // Wait 5 seconds for server to be fully ready
 
   // Then sync every hour
   setInterval(syncBounties, 60 * 60 * 1000);
