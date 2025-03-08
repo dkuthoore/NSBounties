@@ -322,7 +322,7 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
               {bounty.farcasterHandle && (
                 <Badge variant="secondary" className="bg-purple-100 text-purple-800 hover:bg-purple-200">
                   <SiFarcaster className="h-3 w-3 mr-1" />
-                  Bountycaster
+                  Farcaster
                 </Badge>
               )}
               <Badge variant={bounty.status === "open" ? "default" : "secondary"}>
