@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import type { Bounty } from "@shared/schema";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { formatTextWithLinks } from "@/lib/utils";
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
   const { toast } = useToast();
@@ -35,7 +36,9 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground mb-4 line-clamp-2">{bounty.description}</p>
+        <div className="text-muted-foreground mb-4 line-clamp-2">
+          {formatTextWithLinks(bounty.description)}
+        </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
           <Button 

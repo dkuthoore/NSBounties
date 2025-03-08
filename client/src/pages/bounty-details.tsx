@@ -18,6 +18,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBountySchema } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { formatTextWithLinks } from "@/lib/utils";
 
 export default function BountyDetails({ params }: { params: { id: string } }) {
   const { toast } = useToast();
@@ -311,7 +312,9 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
         <CardContent className="space-y-6">
           <div>
             <h3 className="text-lg font-semibold mb-2">Description</h3>
-            <p className="text-muted-foreground whitespace-pre-wrap">{bounty.description}</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {formatTextWithLinks(bounty.description)}
+            </p>
           </div>
 
           <div>
