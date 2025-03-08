@@ -18,7 +18,15 @@ async function fetchBountycasterBounties(): Promise<BountycasterBounty[]> {
     if (!response.ok) {
       throw new Error(`Failed to fetch bounties: ${response.statusText}`);
     }
-    return await response.json();
+    const data = await response.json();
+
+    // Validate response is an array
+    if (!Array.isArray(data)) {
+      console.error("API response is not an array:", data);
+      return [];
+    }
+
+    return data;
   } catch (error) {
     console.error("Error fetching bounties:", error);
     return [];
@@ -39,19 +47,25 @@ async function syncBounty(externalBounty: BountycasterBounty) {
     usdcAmount: externalBounty.amount_usd?.toString() || "0",
     discordHandle: "bountycaster:" + externalBounty.short_name,
     deadline: externalBounty.deadline ? new Date(externalBounty.deadline) : undefined,
-    managementUrl: `bountycaster-${nanoid()}`,
     creatorAddress: "0x0", // placeholder for external bounties
   };
 
   try {
     // Check if bounty already exists with this title and source
     const existingBounty = await db.select().from(bounties)
-      .where(b => b.discordHandle.like(`bountycaster:${externalBounty.short_name}`))
+      .where(b => b.discordHandle === `bountycaster:${externalBounty.short_name}`)
       .execute();
 
     if (existingBounty.length === 0) {
       // Insert new bounty
-      await db.insert(bounties).values(bountyData).execute();
+      const now = new Date();
+      await db.insert(bounties).values({
+        ...bountyData,
+        managementUrl: `bountycaster-${nanoid()}`,
+        createdAt: now,
+        updatedAt: now,
+        status: "open"
+      }).execute();
       console.log(`Synced bounty: ${bountyData.title}`);
     }
   } catch (error) {
@@ -63,12 +77,12 @@ export async function syncBountycasterBounties() {
   console.log("Starting bounty sync from Bountycaster...");
   const allBounties = await fetchBountycasterBounties();
   const nsBounties = filterNSBounties(allBounties);
-  
+
   console.log(`Found ${nsBounties.length} NS bounties to sync`);
-  
+
   for (const bounty of nsBounties) {
     await syncBounty(bounty);
   }
-  
+
   console.log("Bounty sync completed");
 }
