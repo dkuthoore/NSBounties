@@ -1,6 +1,6 @@
 import { bounties, type Bounty, type InsertBounty } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -11,6 +11,7 @@ export interface IStorage {
   updateBountyStatus(id: string, status: "open" | "closed", recipientAddress?: string): Promise<Bounty>;
   updateBounty(id: string, updates: Partial<InsertBounty>): Promise<Bounty>;
   deleteBounty(id: string): Promise<void>;
+  findDuplicateBounty(title: string, farcasterHandle: string): Promise<Bounty | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -70,6 +71,19 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBounty(id: string): Promise<void> {
     await db.delete(bounties).where(eq(bounties.id, id));
+  }
+
+  async findDuplicateBounty(title: string, farcasterHandle: string): Promise<Bounty | undefined> {
+    const [bounty] = await db
+      .select()
+      .from(bounties)
+      .where(
+        and(
+          eq(bounties.title, title),
+          eq(bounties.farcasterHandle, farcasterHandle)
+        )
+      );
+    return bounty;
   }
 }
 

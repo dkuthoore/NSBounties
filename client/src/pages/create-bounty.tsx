@@ -12,12 +12,14 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useAccount } from 'wagmi';
+import { useProfile } from '@farcaster/auth-kit';
 
 export default function CreateBounty() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { address } = useAccount();
+  const { isAuthenticated: isFarcasterAuthenticated, profile: farcasterProfile } = useProfile();
 
   const form = useForm<InsertBounty>({
     resolver: zodResolver(insertBountySchema),
@@ -26,6 +28,7 @@ export default function CreateBounty() {
       description: "",
       usdcAmount: "",
       discordHandle: "",
+      farcasterHandle: farcasterProfile?.username ? `@${farcasterProfile.username}` : "",
       deadline: undefined,
     },
   });
@@ -61,12 +64,13 @@ export default function CreateBounty() {
     },
   });
 
-  if (!address) {
+  // Allow either wallet or Farcaster authentication
+  if (!address && !isFarcasterAuthenticated) {
     return (
       <div className="container mx-auto py-8">
         <Card>
           <CardContent className="pt-6">
-            <p>Please connect your wallet to create a bounty.</p>
+            <p>Please connect your wallet or sign in with Farcaster to create a bounty.</p>
           </CardContent>
         </Card>
       </div>
@@ -124,19 +128,21 @@ export default function CreateBounty() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="discordHandle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discord Handle</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!farcasterProfile?.username && (
+                <FormField
+                  control={form.control}
+                  name="discordHandle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Discord / Farcaster Handle</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

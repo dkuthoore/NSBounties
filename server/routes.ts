@@ -46,6 +46,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             creatorAddress: undefined, // External bounties don't have this
           };
 
+          // Check for duplicate bounty
+          const existingBounty = await storage.findDuplicateBounty(bountyData.title, bountyData.farcasterHandle);
+
+          if (existingBounty) {
+            console.log('Skipping duplicate bounty:', {
+              title: bountyData.title,
+              farcasterHandle: bountyData.farcasterHandle
+            });
+
+            results.push({
+              status: 'skipped',
+              message: 'Duplicate bounty',
+              bounty: bountyData.title
+            });
+            continue;
+          }
+
           // Validate and create bounty using existing schema
           const validatedData = insertBountySchema.parse(bountyData);
           const createdBounty = await storage.createBounty(validatedData);
