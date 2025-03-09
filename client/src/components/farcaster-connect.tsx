@@ -9,7 +9,7 @@ export function FarcasterConnect() {
       {isAuthenticated ? (
         <div className="text-sm text-muted-foreground">@{profile.username}</div>
       ) : (
-        <div className="[&>button]:px-2 [&>button]:py-1 [&>button]:h-8 [&>button]:min-w-[120px] [&>button]:text-sm">
+        <div className="scale-75">
           <SignInButton />
         </div>
       )}
