@@ -181,8 +181,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
 
-      // Ensure the creator is updating their own bounty
-      if (bounty.creatorAddress !== req.body.creatorAddress) {
+      // Check if the creator is updating their own bounty
+      // Allow both wallet address and Farcaster handle authentication
+      const isAuthorized =
+        bounty.creatorAddress === req.body.creatorAddress ||
+        (bounty.farcasterHandle && bounty.farcasterHandle === req.body.farcasterHandle);
+
+      if (!isAuthorized) {
         res.status(403).json({ message: "Not authorized to update this bounty" });
         return;
       }
@@ -222,6 +227,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete bounty
   app.delete("/api/bounties/:id", async (req, res) => {
     try {
+      const bounty = await storage.getBounty(req.params.id);
+      if (!bounty) {
+        res.status(404).json({ message: "Bounty not found" });
+        return;
+      }
+
+      // Check if the creator is deleting their own bounty
+      // Allow both wallet address and Farcaster handle authentication
+      const isAuthorized =
+        bounty.creatorAddress === req.body.creatorAddress ||
+        (bounty.farcasterHandle && bounty.farcasterHandle === req.body.farcasterHandle);
+
+      if (!isAuthorized) {
+        res.status(403).json({ message: "Not authorized to delete this bounty" });
+        return;
+      }
+
       await storage.deleteBounty(req.params.id);
       res.json({ message: "Bounty deleted successfully" });
     } catch (err) {

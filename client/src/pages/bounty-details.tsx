@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Clock, ExternalLink, ArrowLeft, Edit2 } from "lucide-react";
-import { SiDiscord } from "react-icons/si";
-import { SiFarcaster } from "react-icons/si"; // Import SiFarcaster
+import { SiDiscord, SiFarcaster } from "react-icons/si";
 import { formatDistanceToNow } from "date-fns";
 import type { Bounty, InsertBounty } from "@shared/schema";
 import { useAccount } from 'wagmi';
@@ -20,12 +19,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertBountySchema } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { formatTextWithLinks } from "@/lib/utils";
+import { useProfile } from '@farcaster/auth-kit';
 
 export default function BountyDetails({ params }: { params: { id: string } }) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { address } = useAccount();
+  const { isAuthenticated: isFarcasterAuthenticated, profile: farcasterProfile } = useProfile();
   const [recipientAddress, setRecipientAddress] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
@@ -40,7 +41,7 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
       description: "",
       usdcAmount: "",
       discordHandle: "",
-      farcasterHandle: "", // Added farcasterHandle
+      farcasterHandle: "",
       deadline: undefined,
     },
   });
@@ -52,18 +53,25 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
         title: bounty.title,
         description: bounty.description,
         usdcAmount: bounty.usdcAmount.toString(),
-        discordHandle: bounty.discordHandle,
-        farcasterHandle: bounty.farcasterHandle, // Added farcasterHandle
+        discordHandle: bounty.discordHandle || "",
+        farcasterHandle: bounty.farcasterHandle || "",
         deadline: bounty.deadline ? new Date(bounty.deadline).toISOString().split('T')[0] : undefined,
       });
     }
   }, [bounty, form]);
+
+  // Check if the current user is the creator of the bounty
+  const isCreator = address === bounty?.creatorAddress || 
+    (isFarcasterAuthenticated && 
+     farcasterProfile?.username && 
+     bounty?.farcasterHandle === `@${farcasterProfile.username}`);
 
   const updateBounty = useMutation({
     mutationFn: async (data: Partial<InsertBounty>) => {
       const res = await apiRequest("PATCH", `/api/bounties/${params.id}`, {
         ...data,
         creatorAddress: address,
+        farcasterHandle: farcasterProfile?.username ? `@${farcasterProfile.username}` : undefined,
       });
       return res.json();
     },
@@ -176,8 +184,6 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
     );
   }
 
-  const isCreator = address && bounty.creatorAddress === address;
-
   if (isEditing && isCreator) {
     return (
       <div className="container mx-auto py-8">
@@ -251,7 +257,7 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
                 />
                 <FormField
                   control={form.control}
-                  name="farcasterHandle" // Added farcasterHandle field
+                  name="farcasterHandle"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Farcaster Handle</FormLabel>
@@ -307,7 +313,7 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-bold">{bounty.title}</CardTitle>
+            <CardTitle className="text-2xl font-bold">{bounty?.title}</CardTitle>
             <div className="flex items-center gap-2">
               {isCreator && (
                 <Button
@@ -319,14 +325,14 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
                   <Edit2 className="h-4 w-4" />
                 </Button>
               )}
-              {bounty.farcasterHandle && (
+              {bounty?.farcasterHandle && (
                 <Badge variant="secondary" className="bg-purple-100 text-purple-800 hover:bg-purple-200">
                   <SiFarcaster className="h-3 w-3 mr-1" />
                   Farcaster
                 </Badge>
               )}
-              <Badge variant={bounty.status === "open" ? "default" : "secondary"}>
-                {bounty.status}
+              <Badge variant={bounty?.status === "open" ? "default" : "secondary"}>
+                {bounty?.status}
               </Badge>
             </div>
           </div>
@@ -383,7 +389,7 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
             )}
           </div>
 
-          {isCreator && bounty.status === "open" && (
+          {isCreator && bounty?.status === "open" && (
             <div className="flex flex-col gap-4 pt-4 border-t">
               <div>
                 <label className="block text-sm font-medium mb-2">
