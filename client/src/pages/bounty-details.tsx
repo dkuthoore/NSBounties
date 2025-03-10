@@ -61,10 +61,10 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
   }, [bounty, form]);
 
   // Check if the current user is the creator of the bounty
-  const isCreator = address === bounty?.creatorAddress || 
-    (isFarcasterAuthenticated && 
-     farcasterProfile?.username && 
-     bounty?.farcasterHandle === `@${farcasterProfile.username}`);
+  const isCreator = address === bounty?.creatorAddress ||
+    (isFarcasterAuthenticated &&
+      farcasterProfile?.username &&
+      bounty?.farcasterHandle === `@${farcasterProfile.username}`);
 
   const updateBounty = useMutation({
     mutationFn: async (data: Partial<InsertBounty>) => {
@@ -91,7 +91,11 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
 
   const deleteBounty = useMutation({
     mutationFn: async () => {
-      await apiRequest("DELETE", `/api/bounties/${params.id}`);
+      const authData = {
+        creatorAddress: address,
+        farcasterHandle: farcasterProfile?.username ? `@${farcasterProfile.username}` : undefined,
+      };
+      await apiRequest("DELETE", `/api/bounties/${params.id}`, authData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bounties"] });
@@ -353,8 +357,8 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
           <div>
             <h3 className="text-lg font-semibold mb-2">Contact</h3>
             {bounty.discordHandle ? (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={openDiscordDM}
                 className="flex items-center gap-2"
               >
@@ -363,8 +367,8 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
                 <ExternalLink className="h-4 w-4" />
               </Button>
             ) : bounty.farcasterHandle ? (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => window.open(`https://warpcast.com/${bounty.farcasterHandle.replace('@', '')}`, '_blank')}
                 className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
               >
@@ -403,15 +407,15 @@ export default function BountyDetails({ params }: { params: { id: string } }) {
               </div>
 
               <div className="flex gap-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={handlePayment}
                   disabled={!recipientAddress || closeBounty.isPending}
                 >
                   Complete & Pay
                 </Button>
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   onClick={() => {
                     if (window.confirm("Are you sure you want to delete this bounty?")) {
                       deleteBounty.mutate();
